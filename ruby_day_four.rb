@@ -1,4 +1,5 @@
 require 'pry'
+require 'pp'
 lines = File.readlines("../day4.txt").map(&:chomp)
 
 raw_passports = []
@@ -35,11 +36,24 @@ def is_valid?(passport)
     },
     {
       key: 'hgt',
-      validator: lambda { |value| value.include?('cm') ? (150..193).include?(value.to_i) : (59..76).include?(value.to_i) },
+      validator: lambda { |value|
+        if value.end_with?('in')
+          result = (59..76).include?(value.to_i)
+        else
+          result = (150..193).include?(value.to_i)
+        end
+        # result = value.match?(/\d{2,}(cm|in)/) ? (150..193).include?(value.to_i) : (59..76).include?(value.to_i)
+        # if result
+        #   puts value
+        # end
+        return result
+      },
     },
     {
       key: 'hcl',
-      validator: lambda { |value| value.match?(/\#[a-f0-9]{6}/) },
+      validator: lambda { |value|
+        # puts value
+        value.match?(/\#[a-f0-9]{6}/) },
     },
     {
       key: 'ecl',
@@ -47,10 +61,11 @@ def is_valid?(passport)
     },
     {
       key:'pid',
-      validator: lambda { |value| value.match?(/\d{9}/) }
+      validator: lambda { |value| value.length == 9 && value.match?(/\d{9}/) }
     }
   ]
   if valid_keys.all? { |k| passport[k[:key]] != nil && k[:validator].call(passport[k[:key]]) }
+    pp passport
     return true
   end
 
